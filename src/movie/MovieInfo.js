@@ -1,13 +1,19 @@
 import React, { Component } from "react";
 import Navbar from "../header/Navbar";
 import Footer from "../header/Footer";
-import axios from 'axios';
-import {Home} from '@material-ui/icons';
-import {Link} from 'react-router-dom'
-import 'loaders.css'
+import axios from "axios";
+import { Home } from "@material-ui/icons";
+import { Link } from "react-router-dom";
+import "loaders.css";
 import "video-react/dist/video-react.css";
-import { Player, ControlBar, ForwardControl, ReplayControl,VolumeMenuButton   } from 'video-react';
-import Button from '@material-ui/core/Button';
+import {
+  Player,
+  ControlBar,
+  ForwardControl,
+  ReplayControl,
+  VolumeMenuButton
+} from "video-react";
+import Button from "@material-ui/core/Button";
 
 export default class MovieInfo extends Component {
   constructor(props) {
@@ -18,19 +24,19 @@ export default class MovieInfo extends Component {
   state = {
     movie: {},
     credits: [],
-    title_link:'',
-
+    title_quality: "",
+    title_urls: []
   };
 
   fetchMovie = () => {
     const urlMovie = fetch(
       `https://api.themoviedb.org/3/movie/${
         this.props.match.params.movie_id
-      }?api_key=17117ab9c18276d48d8634390c025df4&language=en-US`
+      }?api_key=15508eca3e4b3e62415fe35be0a4a80a&language=en-US`
     );
     const urlCredits = fetch(`https://api.themoviedb.org/3/movie/${
       this.props.match.params.movie_id
-    }/credits?api_key=17117ab9c18276d48d8634390c025df4
+    }/credits?api_key=15508eca3e4b3e62415fe35be0a4a80a
         `);
 
     const urls = [urlMovie, urlCredits];
@@ -41,7 +47,7 @@ export default class MovieInfo extends Component {
         if (this.mounted)
           this.setState({
             movie: data1,
-            credits: data2,
+            credits: data2
           });
       })
       .catch(err => console.log(err));
@@ -50,13 +56,19 @@ export default class MovieInfo extends Component {
   componentDidMount() {
     this.mounted = true;
     this.fetchMovie();
-    axios.get(`https://flixx-v1.herokuapp.com/api/watch/${this.props.match.params.movie_id}`)
-          .then(res=>{
-            this.setState({
-              title_link: res.data.title_link
-            })
-          })
-
+    //Fetch title info
+    axios
+      .get(
+        `https://flixx-v1.herokuapp.com/api/watch/${
+          this.props.match.params.movie_id
+        }`
+      )
+      .then(res => {
+        this.setState({
+          title_quality: res.data.title_quality,
+          title_urls: res.data.title_urls
+        });
+        });
   }
 
   componentDidUpdate(prevProps) {
@@ -77,7 +89,6 @@ export default class MovieInfo extends Component {
 
   changeCurrentTime(seconds) {
     return () => {
-
       const { player } = this.refs.player.getState();
       const currentTime = player.currentTime;
       this.refs.player.seek(currentTime + seconds);
@@ -85,7 +96,7 @@ export default class MovieInfo extends Component {
   }
 
   render() {
-    const { movie, credits, title_link } = this.state;
+    const { movie, credits, title_quality, title_urls } = this.state;
 
     const backgroundImg = {
       backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7) , rgba(0, 0, 0, 0.7)), url("https://image.tmdb.org/t/p/original/${
@@ -94,9 +105,13 @@ export default class MovieInfo extends Component {
     };
 
     const backwithPoster = {
-      backgroundImage: `linear-gradient(90deg, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0.8) 60%), url("https://image.tmdb.org/t/p/original/${movie.poster_path}")`
+      backgroundImage: `linear-gradient(90deg, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0.8) 60%), url("https://image.tmdb.org/t/p/original/${
+        movie.poster_path
+      }")`
     };
-    const imgLink = `https://image.tmdb.org/t/p/original/${movie.backdrop_path}`
+    const imgLink = `https://image.tmdb.org/t/p/original/${
+      movie.backdrop_path
+    }`;
 
     const content =
       Object.keys(movie).length > 0 ? (
@@ -105,31 +120,20 @@ export default class MovieInfo extends Component {
           className="back-height"
         >
           <div className="content">
-              <Link to="/"><Home style={{color:'red'}} fontSize="large"/> </Link>
+            <Link to="/">
+              <Home style={{ color: "red" }} fontSize="large" />{" "}
+            </Link>
             <h1>{movie.title}</h1>
 
-
-              <div className="video">
-
-      <Player
-      ref="player"
-      poster={imgLink}
-      src={title_link}
-      >
-      <ControlBar autoHide={true}>
-         <ReplayControl seconds={5} order={3.1} />
-        <ForwardControl seconds={5} order={3.2} />
-
-            <Button  onClick={
-                          this.changeCurrentTime(20)} order={3.3}>SKIP INTRO</Button>
-
-
-         <VolumeMenuButton vertical />
-      </ControlBar>
-      </Player>
-
-              </div>
-
+            <div className="video">
+              <Player ref="player" poster={imgLink} src={title_urls[0]}>
+                <ControlBar autoHide={true}>
+                  <ReplayControl seconds={5} order={3.1} />
+                  <ForwardControl seconds={5} order={3.2} />
+                  <VolumeMenuButton vertical />
+                </ControlBar>
+              </Player>
+            </div>
 
             <p className="year-run-vote">
               <span className="year">
@@ -171,22 +175,25 @@ export default class MovieInfo extends Component {
                   <span className="greyed">Director: </span>{" "}
                   {credits.crew[0].name}
                 </p>
-
               )}
-              <Button size="small" variant='outlined' style={{color:'red', backgroundColor:'black'}}  href="https://flixx.typeform.com/to/gJOwts">Request movie</Button>
-
+              <Button
+                size="small"
+                variant="outlined"
+                style={{ color: "red", backgroundColor: "black" }}
+                href="https://flixx.typeform.com/to/gJOwts"
+              >
+                Request movie
+              </Button>
             </div>
           </div>
         </div>
       ) : (
-        <div style={{  margin: 'auto',
-  width: '0%',
-}} className="pacman">
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
+        <div style={{ margin: "auto", width: "0%" }} className="pacman">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
         </div>
       );
 
@@ -194,8 +201,8 @@ export default class MovieInfo extends Component {
       <div>
         <Navbar />
         <div className="movie-page">{content}</div>
-        <Footer/>
-        </div>
+        <Footer />
+      </div>
     );
   }
 }
